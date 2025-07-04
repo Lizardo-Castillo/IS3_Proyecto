@@ -1,6 +1,6 @@
 ## Proyecto Flutter
 
-Este es un proyecto Flutter que muestra cómo crear una aplicación con [descripción de la funcionalidad].
+Este es un proyecto Flutter
 
 ## Resultados
 
