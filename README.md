@@ -17,14 +17,19 @@ Aquí está la segunda imagen que muestra otro resultado:
 ## Interfaces en el proyecto
 ### Registro:
 <img width="451" height="1031" alt="image" src="https://github.com/user-attachments/assets/246d656b-1498-4552-92d2-eac4ab506f63" />
+
 ### Login:
 <img width="450" height="1031" alt="image" src="https://github.com/user-attachments/assets/0b9e1fe5-b955-40c6-a10b-b3439a2ec136" />
+
 ### Recuperar Contraseña:
 <img width="450" height="1032" alt="image" src="https://github.com/user-attachments/assets/1549c286-5078-446b-a16b-fa43b27f39e5" />
+
 ### SmartBudget (principal):
 <img width="449" height="1031" alt="image" src="https://github.com/user-attachments/assets/c173c31a-cbd0-46b8-9701-094b919ebfee" />
+
 ### Añadir transacción:
 <img width="453" height="1031" alt="image" src="https://github.com/user-attachments/assets/e617bac6-3722-401b-9817-b57ef4c608a4" />
+
 ### Editar transacción:
 <img width="450" height="1033" alt="image" src="https://github.com/user-attachments/assets/26cdce9e-71a4-427a-bc0f-3b5b09ddce46" />
 
