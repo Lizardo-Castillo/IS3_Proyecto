@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class LoginScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       const Text(
-                        "SmartBudget",
+                        "REGISTRATE!",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -63,6 +63,20 @@ class LoginScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
 
+                      // Correo
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: "Correo",
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // Contraseña
                       TextField(
                         obscureText: true,
@@ -76,34 +90,43 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
 
-                      // 🔗 Botón: ¿Olvidaste tu contraseña?
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/recover');
-                          },
-                          child: const Text(
-                            "¿Olvidaste tu contraseña?",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
+                      // Confirmar Contraseña
+                      TextField(
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          hintText: "Confirmación de contraseña",
+                          prefixIcon: const Icon(Icons.lock_reset),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
 
-                      // Botón ingresar
+                      // Teléfono
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: "Teléfono",
+                          prefixIcon: const Icon(Icons.phone_outlined),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Botón Registrarme
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/home');
+                            // Lógica de registro
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.brown,
@@ -113,7 +136,7 @@ class LoginScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: const Text(
-                            'INGRESAR',
+                            'REGISTRARME',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.white,
@@ -124,13 +147,13 @@ class LoginScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
 
-                      // Enlace a registro
+                      // Ya tienes cuenta
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/register');
+                          Navigator.pushNamed(context, '/');
                         },
                         child: const Text(
-                          "¿No tienes una cuenta? REGISTRATE",
+                          "¿Ya tienes cuenta? INICIA SESIÓN",
                           style: TextStyle(
                             color: Colors.brown,
                             fontWeight: FontWeight.bold,

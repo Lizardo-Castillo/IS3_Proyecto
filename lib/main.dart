@@ -3,8 +3,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/recover_password.dart';
+import 'screens/registrer_screen.dart';
+import 'screens/add_transaction_screen.dart';
 
-Future <void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -28,6 +31,10 @@ class SmartBudgetApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/recover': (context) => const RecoverPasswordScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/add': (context) => const AddTransactionScreen(),
+
       },
     );
   }
