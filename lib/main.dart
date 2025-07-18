@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/recover_password.dart';
 import 'screens/registrer_screen.dart';
 import 'screens/add_transaction_screen.dart';
+import 'screens/edit_transaction_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,7 @@ class SmartBudgetApp extends StatelessWidget {
         '/recover': (context) => const RecoverPasswordScreen(),
         '/register': (context) => const RegisterScreen(),
         '/add': (context) => const AddTransactionScreen(),
-
+        '/edit': (context) => const EditTransactionScreen(),
       },
     );
   }
