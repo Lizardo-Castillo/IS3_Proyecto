@@ -37,6 +37,7 @@ dependencies:
   firebase_core: ^2.32.0
   firebase_auth: ^4.20.0
   cloud_firestore: ^4.17.5
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:
@@ -92,3 +93,5 @@ flutter:
   # see https://flutter.dev/to/font-from-package
   assets:
     - assets/logo.png
+    - assets/cerdito_contrasena.png
+    - assets/cerdito_llorando.png
