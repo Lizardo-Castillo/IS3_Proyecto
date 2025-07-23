@@ -6,6 +6,14 @@ import 'screens/home_screen.dart';
 import 'screens/recover_password.dart';
 import 'screens/registrer_screen.dart';
 import 'screens/add_transaction_screen.dart';
+import 'screens/edit_transaction_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/profile_settings_screen.dart';
+import 'screens/currency_settings_screen.dart';
+import 'screens/language_settings_screem.dart';
+import 'screens/privacy_policy_screen.dart';
+import 'screens/terms_of_use_screen.dart';
+import 'screens/about_us_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +42,14 @@ class SmartBudgetApp extends StatelessWidget {
         '/recover': (context) => const RecoverPasswordScreen(),
         '/register': (context) => const RegisterScreen(),
         '/add': (context) => const AddTransactionScreen(),
-
+        '/edit': (context) => const EditTransactionScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/profile_settings': (context) => const ProfileSettingsScreen(),
+        '/currency_settings': (context) => const CurrencySettingsScreen(),
+        '/language_settings': (context) => const LanguageSettingsScreen(),
+        '/privacy_policy': (context) => const PrivacyPolicyScreen(),
+        '/terms_of_use': (context) => const TermsOfUseScreen(),
+        '/about_us': (context) => const AboutUsScreen(),
       },
     );
   }

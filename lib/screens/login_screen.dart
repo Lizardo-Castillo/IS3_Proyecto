@@ -1,7 +1,34 @@
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart'; // Asegúrate que la ruta sea correcta
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  void _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    final user = await _authService.login(email, password);
+
+    if (user != null) {
+      // Si inicia sesión correctamente, navega a la pantalla de inicio
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // Si falla, muestra un mensaje de error
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Correo o contraseña incorrectos")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,23 +41,10 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 🐷 Logo
-                Image.asset(
-                  'assets/logo.png',
-                  height: 120,
-                ),
+                Image.asset('assets/logo.png', height: 120),
                 const SizedBox(height: 10),
-                const Text(
-                  "TU DINERO, BAJO CONTROL",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.brown,
-                  ),
-                ),
+                const Text("TU DINERO, BAJO CONTROL", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.brown)),
                 const SizedBox(height: 30),
-
-                // 🪟 Contenedor central
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -39,103 +53,55 @@ class LoginScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const Text(
-                        "SmartBudget",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.brown,
-                        ),
-                      ),
+                      const Text("SmartBudget", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.brown)),
                       const SizedBox(height: 24),
-
-                      // Usuario
                       TextField(
+                        controller: _emailController,
                         decoration: InputDecoration(
-                          hintText: "Usuario",
+                          hintText: "Usuario (Correo)",
                           prefixIcon: const Icon(Icons.person_outline),
                           filled: true,
                           fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // Contraseña
                       TextField(
+                        controller: _passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           hintText: "Contraseña",
                           prefixIcon: const Icon(Icons.lock_outline),
                           filled: true,
                           fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                         ),
                       ),
                       const SizedBox(height: 8),
-
-                      // 🔗 Botón: ¿Olvidaste tu contraseña?
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/recover');
-                          },
-                          child: const Text(
-                            "¿Olvidaste tu contraseña?",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
+                          onPressed: () => Navigator.pushNamed(context, '/recover'),
+                          child: const Text("¿Olvidaste tu contraseña?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
-                      // Botón ingresar
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/home');
-                          },
+                          onPressed: _handleLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.brown,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: const Text(
-                            'INGRESAR',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child: const Text('INGRESAR', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // Enlace a registro
                       TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/register');
-                        },
-                        child: const Text(
-                          "¿No tienes una cuenta? REGISTRATE",
-                          style: TextStyle(
-                            color: Colors.brown,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        onPressed: () => Navigator.pushNamed(context, '/register'),
+                        child: const Text("¿No tienes una cuenta? REGÍSTRATE", style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)),
                       )
                     ],
                   ),

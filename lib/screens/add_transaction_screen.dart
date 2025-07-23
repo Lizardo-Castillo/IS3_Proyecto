@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_final/services/transaction_service.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -22,6 +23,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final List<String> categoriasIngreso = [
     "Salario", "Inversiones", "Trabajo Parcial"
   ];
+
+  final TextEditingController amountController = TextEditingController();
 
   void _pickDate() async {
     final DateTime? date = await showDatePicker(
@@ -141,12 +144,34 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
             const Spacer(),
 
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Monto',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             // Botón AÑADIR
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // lógica para guardar
+                onPressed: () async {
+                  if (selectedCategory == null || amountController.text.isEmpty) return;
+                    double monto = double.tryParse(amountController.text) ?? 0;
+
+                    final transactionService = TransactionService();
+                    await transactionService.addTransaction(
+                      usuario: 'Karla Cornejo',
+                      tipo: transactionType,
+                      categoria: selectedCategory!,
+                      monto: monto,
+                      fecha: selectedDate,
+                    );
+
+                    Navigator.pop(context); // volver a HomeScreen
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.brown,
