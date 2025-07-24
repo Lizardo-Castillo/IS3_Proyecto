@@ -30,7 +30,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               Text(
-                'Última actualización: [Fecha]',
+                'Última actualización: 25-07-2025',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.brown,

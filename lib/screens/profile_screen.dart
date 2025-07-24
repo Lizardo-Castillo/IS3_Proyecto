@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFE3E3),
       body: SafeArea(
         child: Column(
           children: [
-            // Header con nombre de usuario y botón home
+            // Header
             Container(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -20,9 +24,9 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.person, color: Colors.brown, size: 24),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Karla Cornejo',
-                        style: TextStyle(
+                      Text(
+                        user?.email ?? 'Usuario',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.brown,
@@ -31,14 +35,16 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                   IconButton(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/home');
+                    },
                     icon: const Icon(Icons.home, color: Colors.brown, size: 28),
                   ),
                 ],
               ),
             ),
-            
-            // Lista de opciones del menú
+
+            // Menú
             Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -52,74 +58,50 @@ class ProfileScreen extends StatelessWidget {
                     _ProfileMenuItem(
                       icon: Icons.settings,
                       title: 'PERFIL',
-                      onTap: () {
-                        // Navegar a configuración de perfil
-                        Navigator.pushNamed(context, '/profile_settings');
-                      },
+                      onTap: () => Navigator.pushNamed(context, '/profile_settings'),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.attach_money,
                       title: 'MONEDA',
-                      onTap: () {
-                        // Navegar a configuración de moneda
-                        Navigator.pushNamed(context, '/currency_settings');
-                      },
+                      onTap: () => Navigator.pushNamed(context, '/currency_settings'),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.delete_sweep,
                       title: 'ELIMINAR TODOS LOS DATOS',
-                      onTap: () {
-                        // Mostrar diálogo de confirmación
-                        _showDeleteAllDataDialog(context);
-                      },
+                      onTap: () => _showDeleteAllDataDialog(context),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.language,
                       title: 'IDIOMA',
-                      onTap: () {
-                        // Navegar a configuración de idioma
-                        Navigator.pushNamed(context, '/language_settings');
-                      },
+                      onTap: () => Navigator.pushNamed(context, '/language_settings'),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.description,
                       title: 'TÉRMINOS DE USO',
-                      onTap: () {
-                        // Navegar a términos de uso
-                        Navigator.pushNamed(context, '/terms_of_use');
-                      },
+                      onTap: () => Navigator.pushNamed(context, '/terms_of_use'),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.privacy_tip,
                       title: 'POLÍTICA DE PRIVACIDAD',
-                      onTap: () {
-                        // Navegar a política de privacidad
-                        Navigator.pushNamed(context, '/privacy_policy');
-                      },
+                      onTap: () => Navigator.pushNamed(context, '/privacy_policy'),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.group,
                       title: 'SOBRE NOSOTROS',
-                      onTap: () {
-                        // Navegar a información sobre la app
-                        Navigator.pushNamed(context, '/about_us');
-                      },
+                      onTap: () => Navigator.pushNamed(context, '/about_us'),
                     ),
                     _ProfileMenuItem(
                       icon: Icons.logout,
                       title: 'CERRAR SESIÓN',
-                      onTap: () {
-                        // Mostrar diálogo de confirmación para cerrar sesión
-                        _showLogoutDialog(context);
-                      },
+                      onTap: () => _showLogoutDialog(context),
                     ),
                     const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
-            
-            // Footer con nombre de la app
+
+            // Footer
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Text(
@@ -141,56 +123,80 @@ class ProfileScreen extends StatelessWidget {
   void _showDeleteAllDataDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Eliminar todos los datos'),
-          content: const Text('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Aquí implementarías la lógica para eliminar todos los datos
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Todos los datos han sido eliminados')),
-                );
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar todos los datos'),
+        content: const Text(
+          '¿Estás seguro de que quieres eliminar *todas* las transacciones? Esta acción no se puede deshacer.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop(); // Cierra el diálogo
+
+              try {
+                // Obtener TODAS las transacciones sin importar el usuario
+                final snapshot = await FirebaseFirestore.instance
+                    .collection('transactions')
+                    .get();
+
+                // Eliminar cada documento
+                for (final doc in snapshot.docs) {
+                  await doc.reference.delete();
+                }
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Todas las transacciones han sido eliminadas')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al eliminar transacciones: $e')),
+                  );
+                }
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
     );
   }
+
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Cerrar Sesión'),
-          content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Aquí implementarías la lógica para cerrar sesión
-                Navigator.of(context).pop();
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Cerrar Sesión'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar Sesión'),
+        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await FirebaseAuth.instance.signOut();
+              // Elimina todas las pantallas anteriores del historial
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/', // o la ruta de tu pantalla de login
+                (Route<dynamic> route) => false,
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Cerrar Sesión'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -224,11 +230,7 @@ class _ProfileMenuItem extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: Colors.brown,
-                  size: 24,
-                ),
+                Icon(icon, color: Colors.brown, size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
@@ -240,11 +242,7 @@ class _ProfileMenuItem extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.brown.withOpacity(0.6),
-                  size: 20,
-                ),
+                Icon(Icons.chevron_right, color: Colors.brown.withOpacity(0.6), size: 20),
               ],
             ),
           ),

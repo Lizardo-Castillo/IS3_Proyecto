@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({super.key});
@@ -17,14 +19,13 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargar datos actuales del usuario
     _loadUserData();
   }
 
   void _loadUserData() {
-    // Aquí cargarías los datos actuales del usuario desde tu servicio/base de datos
+    // Cargar datos simulados o desde Firebase si deseas
     _nameController.text = "Karla Cornejo";
-    _emailController.text = "karla@example.com";
+    _emailController.text = FirebaseAuth.instance.currentUser?.email ?? "karla@example.com";
     _phoneController.text = "+51 999 888 777";
   }
 
@@ -45,7 +46,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header con nombre de usuario y botón home
             Container(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -55,9 +55,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     children: [
                       const Icon(Icons.person, color: Colors.brown, size: 24),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Karla Cornejo',
-                        style: TextStyle(
+                      Text(
+                        _nameController.text,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.brown,
@@ -73,7 +73,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
             ),
 
-            // Botón PERFIL activo
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -82,10 +81,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
-                children: [
-                  const Icon(Icons.settings, color: Colors.brown, size: 24),
-                  const SizedBox(width: 16),
-                  const Text(
+                children: const [
+                  Icon(Icons.settings, color: Colors.brown, size: 24),
+                  SizedBox(width: 16),
+                  Text(
                     'PERFIL',
                     style: TextStyle(
                       fontSize: 16,
@@ -99,7 +98,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
             const SizedBox(height: 20),
 
-            // Formulario de edición
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -109,24 +107,14 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       icon: Icons.person,
                       title: 'EDITAR NOMBRE',
                       controller: _nameController,
-                      onTap: () => _showEditDialog(
-                        context,
-                        'Editar Nombre',
-                        _nameController,
-                        TextInputType.text,
-                      ),
+                      onTap: () => _showEditDialog(context, 'Editar Nombre', _nameController, TextInputType.text),
                     ),
                     const SizedBox(height: 12),
                     _ProfileEditButton(
                       icon: Icons.email,
                       title: 'EDITAR CORREO',
                       controller: _emailController,
-                      onTap: () => _showEditDialog(
-                        context,
-                        'Editar Correo',
-                        _emailController,
-                        TextInputType.emailAddress,
-                      ),
+                      onTap: () => _showEditDialog(context, 'Editar Correo', _emailController, TextInputType.emailAddress),
                     ),
                     const SizedBox(height: 12),
                     _ProfileEditButton(
@@ -149,16 +137,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       icon: Icons.phone,
                       title: 'EDITAR TELÉFONO',
                       controller: _phoneController,
-                      onTap: () => _showEditDialog(
-                        context,
-                        'Editar Teléfono',
-                        _phoneController,
-                        TextInputType.phone,
-                      ),
+                      onTap: () => _showEditDialog(context, 'Editar Teléfono', _phoneController, TextInputType.phone),
                     ),
                     const SizedBox(height: 40),
-                    
-                    // Botón Guardar
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -185,7 +166,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
             ),
 
-            // Footer con nombre de la app
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Text(
@@ -227,7 +207,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {}); // Actualizar la UI
+                setState(() {});
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('$title actualizado correctamente')),
@@ -290,6 +270,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             TextButton(
               onPressed: () {
                 if (newPasswordController.text == confirmPasswordController.text) {
+                  _passwordController.text = newPasswordController.text;
+                  _confirmPasswordController.text = confirmPasswordController.text;
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Contraseña actualizada correctamente')),
@@ -308,14 +290,50 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 
-  void _saveChanges() {
-    // Aquí implementarías la lógica para guardar todos los cambios
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Todos los cambios han sido guardados correctamente'),
-        backgroundColor: Colors.green,
-      ),
-    );
+  void _saveChanges() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid;
+
+    if (user == null || uid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuario no autenticado')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'name': _nameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+      }, SetOptions(merge: true));
+
+      if (_emailController.text.trim() != user.email) {
+        await user.updateEmail(_emailController.text.trim());
+      }
+
+      final newPassword = _passwordController.text.trim();
+      final confirmPassword = _confirmPasswordController.text.trim();
+
+      if (newPassword.isNotEmpty && newPassword == confirmPassword) {
+        await user.updatePassword(newPassword);
+      } else if (newPassword.isNotEmpty || confirmPassword.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Las contraseñas no coinciden')),
+        );
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Todos los cambios han sido guardados correctamente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar los cambios: $e')),
+      );
+    }
   }
 }
 
@@ -361,11 +379,7 @@ class _ProfileEditButton extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
-                icon,
-                color: Colors.brown,
-                size: 24,
-              ),
+              Icon(icon, color: Colors.brown, size: 24),
             ],
           ),
         ),

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/transaction_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFE3E3),
       appBar: AppBar(
@@ -30,9 +34,9 @@ class HomeScreen extends StatelessWidget {
                 // Nombre con botón de perfil
                 Row(
                   children: [
-                    const Text(
-                      'Karla Cornejo', 
-                      style: TextStyle(
+                    Text(
+                      user != null ? user.email!.split('@').first : 'Usuario',
+                      style: const TextStyle(
                         fontSize: 18, 
                         fontWeight: FontWeight.bold, 
                         color: Colors.brown
