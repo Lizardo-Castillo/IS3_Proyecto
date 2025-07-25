@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/transaction_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -15,6 +16,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final user = FirebaseAuth.instance.currentUser;
+    
     return Scaffold(
       backgroundColor: const Color(0xFFFFE3E3),
       body: SafeArea(
@@ -30,13 +34,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     children: [
                       const Icon(Icons.person, color: Colors.brown, size: 24),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Karla Cornejo',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.brown,
-                        ),
+                      Text(
+                        user != null ? user.email!.split('@').first : 'Usuario',
+                        style: const TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.brown
+                        )
                       ),
                     ],
                   ),
