@@ -39,5 +39,61 @@ Aquí está la segunda imagen que muestra otro resultado:
 
 ## Instrucciones de ejecución
 
-1. Clona este repositorio.
-2. Ejecuta el comando `flutter run` para ver la aplicación en acción.
+## 🚀 Requisitos Previos
+
+Antes de ejecutar el proyecto, asegúrate de tener instalado lo siguiente:
+
+- ✅ [Flutter SDK](https://docs.flutter.dev/get-started/install)
+- ✅ [Firebase CLI](https://firebase.google.com/docs/cli)
+- ✅ [Android Studio](https://developer.android.com/studio) (o tu emulador de preferencia)
+- ✅ Un dispositivo emulador o físico configurado
+- ✅ Una cuenta de Firebase con un proyecto configurado
+
+---
+
+## ⚙️ Configuración Inicial
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/tu-usuario/tu-repo.git
+cd tu-repo
+
+2. Conectar con Firebase
+
+1. Ve a Firebase Console, crea un nuevo proyecto o usa uno existente.
+
+
+2. Agrega una app Android al proyecto con tu package name.
+
+
+3. Descarga el archivo google-services.json y colócalo en la ruta:
+
+
+
+android/app/google-services.json
+
+4. Verifica que tu archivo android/build.gradle y android/app/build.gradle estén correctamente configurados con los plugins de Firebase.
+
+
+
+3. Instalar dependencias
+
+flutter clean
+flutter pub get
+
+
+---
+
+▶️ Correr la Aplicación
+
+Con un emulador Android corriendo o un dispositivo conectado, ejecuta:
+
+flutter run
+
+🛠️ Comandos Útiles
+
+flutter doctor       # Verifica que todo esté correctamente instalado
+flutter devices      # Muestra los dispositivos disponibles
+flutter build apk    # Genera el APK para producción
+
