@@ -58,8 +58,9 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado lo siguiente:
 ```bash
 git clone https://github.com/tu-usuario/tu-repo.git
 cd tu-repo
+```
 
-2. Conectar con Firebase
+### 2. Conectar con Firebase
 
 1. Ve a Firebase Console, crea un nuevo proyecto o usa uno existente.
 
@@ -70,8 +71,9 @@ cd tu-repo
 3. Descarga el archivo google-services.json y colócalo en la ruta:
 
 
-
+```bash
 android/app/google-services.json
+```
 
 4. Verifica que tu archivo android/build.gradle y android/app/build.gradle estén correctamente configurados con los plugins de Firebase.
 
@@ -79,21 +81,24 @@ android/app/google-services.json
 
 3. Instalar dependencias
 
+```bash
 flutter clean
 flutter pub get
 
-
----
-
+```
 ▶️ Correr la Aplicación
 
 Con un emulador Android corriendo o un dispositivo conectado, ejecuta:
 
+```bash
 flutter run
+```
 
 🛠️ Comandos Útiles
 
+```bash
 flutter doctor       # Verifica que todo esté correctamente instalado
 flutter devices      # Muestra los dispositivos disponibles
 flutter build apk    # Genera el APK para producción
 
+```
