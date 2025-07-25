@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:proyecto_final/services/user_service.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({super.key});
@@ -124,7 +124,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       isPassword: true,
                       onTap: () => _showPasswordDialog(context),
                     ),
-                    const SizedBox(height: 12),
+                    /*const SizedBox(height: 12),
                     _ProfileEditButton(
                       icon: Icons.security,
                       title: 'CONFIRMAR CONTRASEÑA',
@@ -132,7 +132,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       isPassword: true,
                       onTap: () => _showPasswordDialog(context),
                     ),
-                    const SizedBox(height: 12),
+                    */const SizedBox(height: 12),
                     _ProfileEditButton(
                       icon: Icons.phone,
                       title: 'EDITAR TELÉFONO',
@@ -290,37 +290,79 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 
-  void _saveChanges() async {
-    final user = FirebaseAuth.instance.currentUser;
-    final uid = user?.uid;
+  Future<String?> _askCurrentPassword() async {
+    String? password;
+    final controller = TextEditingController();
 
-    if (user == null || uid == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuario no autenticado')),
-      );
-      return;
-    }
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar contraseña'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'Contraseña actual'),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          ElevatedButton(
+            child: const Text('Confirmar'),
+            onPressed: () {
+              password = controller.text.trim();
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+
+    return password;
+  }
+
+  void _saveChanges() async {
+    final userService = UserService();
+
+    final newEmail = _emailController.text.trim();
+    final newPassword = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+    final currentEmail = FirebaseAuth.instance.currentUser?.email;
 
     try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'name': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-      }, SetOptions(merge: true));
+      await userService.updateProfileData(
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+      );
 
-      if (_emailController.text.trim() != user.email) {
-        await user.updateEmail(_emailController.text.trim());
+      // Si el correo cambió
+      if (newEmail != currentEmail) {
+        final currentPassword = await _askCurrentPassword();
+        if (currentPassword == null || currentPassword.isEmpty) return;
+
+        await userService.updateEmail(
+          newEmail: newEmail,
+          currentPassword: currentPassword,
+        );
       }
 
-      final newPassword = _passwordController.text.trim();
-      final confirmPassword = _confirmPasswordController.text.trim();
+      // Si se quiere cambiar la contraseña
+      if (newPassword.isNotEmpty || confirmPassword.isNotEmpty) {
+        if (newPassword != confirmPassword) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Las contraseñas no coinciden')),
+          );
+          return;
+        }
 
-      if (newPassword.isNotEmpty && newPassword == confirmPassword) {
-        await user.updatePassword(newPassword);
-      } else if (newPassword.isNotEmpty || confirmPassword.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Las contraseñas no coinciden')),
+        final currentPassword = await _askCurrentPassword();
+        if (currentPassword == null) return;
+
+        await userService.updatePassword(
+          currentPassword: currentPassword,
+          newPassword: newPassword,
         );
-        return;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(

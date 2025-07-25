@@ -48,6 +48,32 @@ class TransactionService {
     return {'gastos': gastos, 'ingresos': ingresos, 'saldo': saldo};
   }
 
+  static Future<Map<DateTime, Map<String, double>>> getGroupedDataByDate() async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('transactions')
+        .orderBy('fecha')
+        .get();
+
+    final grouped = <DateTime, Map<String, double>>{};
+
+    for (var doc in querySnapshot.docs) {
+      final fecha = (doc['fecha'] as Timestamp).toDate();
+      final tipo = doc['tipo'];
+      final monto = (doc['monto'] as num).toDouble();
+
+      final fechaKey = DateTime(fecha.year, fecha.month, fecha.day); // Agrupar solo por día
+
+      grouped[fechaKey] ??= {'ingresos': 0.0, 'gastos': 0.0};
+      if (tipo == 'Ingreso') {
+        grouped[fechaKey]!['ingresos'] = grouped[fechaKey]!['ingresos']! + monto;
+      } else {
+        grouped[fechaKey]!['gastos'] = grouped[fechaKey]!['gastos']! + monto;
+      }
+    }
+
+    return grouped;
+  }
+
   Future<void> updateTransaction({
     required String id,
     required String tipo,

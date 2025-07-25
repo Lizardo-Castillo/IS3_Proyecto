@@ -15,6 +15,7 @@ import 'screens/privacy_policy_screen.dart';
 import 'screens/terms_of_use_screen.dart';
 import 'screens/about_us_screen.dart';
 import 'screens/reports_screen.dart';
+import 'screens/chart_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,7 @@ class SmartBudgetApp extends StatelessWidget {
         '/terms_of_use': (context) => const TermsOfUseScreen(),
         '/about_us': (context) => const AboutUsScreen(),
         '/reports': (context) => const ReportsScreen(),
+        '/charts': (context) => const ChartScreen(),
       },
     );
   }
