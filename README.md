@@ -24,11 +24,6 @@
    - En "Configuración" define límites por categoría
    - Recibirás alertas automáticas al superarlos
 
-### Capturas de Pantalla
-| Inicio Sesión | Registro Transacción | Reportes |
-|---------------|----------------------|----------|
-| <img src="screenshots/login.jpg" width="200"> | <img src="screenshots/transaction.jpg" width="200"> | <img src="screenshots/report.jpg" width="200"> |
-
 ## Resultados
 
 ### Resultado 1
