@@ -12,7 +12,93 @@ class ReportsScreen extends StatefulWidget {
 
 class _ReportsScreenState extends State<ReportsScreen> {
   double _limite = 1000.0; // Límite por defecto
+  double _ingresoInicial = 0.0; // Ingreso inicial por defecto
   bool _limitExceeded = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          print('Datos cargados desde Firebase: $data'); // Debug
+          setState(() {
+            _limite = (data['limite'] as num?)?.toDouble() ?? 1000.0;
+            _ingresoInicial = (data['IngresoInicial'] as num?)?.toDouble() ?? 0.0;
+            _isLoading = false;
+          });
+          print('Límite: $_limite, Ingreso inicial: $_ingresoInicial'); // Debug
+        } else {
+          print('Documento no existe, usando valores por defecto'); // Debug
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        print('Error al cargar datos: $e'); // Debug
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } else {
+      print('Usuario no autenticado'); // Debug
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _saveUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        print('Guardando datos: Límite=$_limite, Ingreso inicial=$_ingresoInicial'); // Debug
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set({
+          'limite': _limite,
+          'IngresoInicial': _ingresoInicial,
+        }, SetOptions(merge: true));
+        
+        print('Datos guardados exitosamente'); // Debug
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Datos guardados correctamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        print('Error al guardar: $e'); // Debug
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar los datos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } else {
+      print('Usuario no autenticado para guardar'); // Debug
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Usuario no autenticado'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +156,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
             // Contenido principal
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : StreamBuilder<QuerySnapshot>(
                 stream: TransactionService.getTransactionsStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -90,7 +178,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
                       final gastos = resumenSnapshot.data!['gastos']!;
                       final ingresos = resumenSnapshot.data!['ingresos']!;
-                      final saldo = resumenSnapshot.data!['saldo']!;
 
                       // Verificar si se excede el límite
                       _limitExceeded = gastos > _limite;
@@ -103,17 +190,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: _InfoCard(
+                                  child: _EditableInfoCard(
                                     title: 'INGRESO INICIAL',
-                                    value: '',
-                                    isEmpty: true,
+                                    value: 'S/ ${_ingresoInicial.toStringAsFixed(2)}',
+                                    onTap: () => _showIngresoInicialDialog(),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: _InfoCard(
                                     title: 'INGRESO TOTAL',
-                                    value: 'S/ ${ingresos.toStringAsFixed(2)}',
+                                    value: 'S/ ${(_ingresoInicial + ingresos).toStringAsFixed(2)}',
                                     isEmpty: false,
                                   ),
                                 ),
@@ -138,9 +225,38 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             // Ganancia o pérdida neta
                             _InfoCard(
                               title: 'GANANCIA O PÉRDIDA NETA',
-                              value: '',
+                              value: 'S/ ${((_ingresoInicial + ingresos) - gastos).toStringAsFixed(2)}',
                               subtitle: 'INGRESOS TOTALES - GASTOS TOTALES',
-                              isEmpty: true,
+                              isEmpty: false,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Botón de guardar
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ElevatedButton.icon(
+                                onPressed: _saveUserData,
+                                icon: const Icon(Icons.save, color: Colors.white),
+                                label: const Text(
+                                  'GUARDAR CAMBIOS',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.brown,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 4,
+                                ),
+                              ),
                             ),
 
                             const SizedBox(height: 30),
@@ -175,6 +291,47 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showIngresoInicialDialog() {
+    print('Abriendo diálogo de ingreso inicial'); // Debug
+    final TextEditingController controller = TextEditingController();
+    controller.text = _ingresoInicial.toString();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Establecer Ingreso Inicial'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Ingreso inicial',
+              prefixText: 'S/ ',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                final newIngreso = double.tryParse(controller.text) ?? _ingresoInicial;
+                print('Nuevo ingreso ingresado: $newIngreso'); // Debug
+                setState(() {
+                  _ingresoInicial = newIngreso;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -282,6 +439,72 @@ class _InfoCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _EditableInfoCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final VoidCallback onTap;
+
+  const _EditableInfoCard({
+    required this.title,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        print('Tarjeta de ingreso inicial tocada'); // Debug
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD99898),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: Colors.brown.withOpacity(0.3),
+            width: 2,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.brown,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.edit,
+                  size: 16,
+                  color: Colors.brown,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
